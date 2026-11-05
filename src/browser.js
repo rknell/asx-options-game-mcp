@@ -67,7 +67,7 @@ export class GameBrowser {
         href: el.getAttribute('href'),
       });
       document.querySelectorAll('[data-asx-mcp-ref]').forEach(el => el.removeAttribute('data-asx-mcp-ref'));
-      const elements = [...document.querySelectorAll('button,a[href],input,select,textarea,[role="button"],[role="option"],[ng-click],[data-ng-click],[onclick]')]
+      const elements = [...document.querySelectorAll('button,a[href],input,select,textarea,label,[role="button"],[role="option"],[ng-click],[data-ng-click],[onclick]')]
         .filter(visible).filter(el => !['password', 'hidden', 'file'].includes(el.getAttribute('type')));
       const controls = elements.slice(0, 500).map((el, index) => {
         const ref = `${id}-${index}`;
