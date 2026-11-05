@@ -20,11 +20,11 @@ test('browser adapter edits, snapshots, rejects stale forms and reads orders', a
     <label>Quantity<input type="number" value="1"></label>
     <select><option value="limit">Limit</option><option value="market">Market</option></select>
     <button onclick="document.querySelector('tbody').innerHTML='<tr><td>fixture-order-1</td><td>Accepted</td></tr>'">Submit simulated order</button>
-    <table><tbody><tr><td>Cash</td><td>50000</td></tr></tbody></table>` }));
+    <table><tbody><tr><td>Account Cash</td><td>$50,000</td><td>$50,000</td></tr></tbody></table>` }));
   const page = context.pages()[0]; await page.goto(GAME);
   const browser = new GameBrowser(dir); browser.context = context; browser.page = page;
   const first = await browser.snapshot();
-  assert.equal(first.tables[0][0][1], '50000');
+  assert.equal(first.tables[0][0][1], '$50,000');
   assert.ok(!JSON.stringify(first).includes('secret'));
   const qty = first.controls.find(c => c.label === 'Quantity');
   const submit = first.controls.find(c => c.text === 'Submit simulated order');
@@ -44,6 +44,7 @@ test('browser adapter edits, snapshots, rejects stale forms and reads orders', a
   await assert.rejects(() => browser.act({ snapshotId: fresh.snapshotId, actions: [
     { kind: 'click', ref: fresh.controls.find(c => c.text === 'Submit simulated order').ref },
   ] }), /Control changed/);
+  await page.locator('tbody').evaluate(el => el.innerHTML = '<tr><td>Account Cash</td><td>$50,000</td><td>$50,000</td></tr>');
   assert.ok((await browser.navigate('portfolio')).url.endsWith('#!/portfolio/123'));
   await page.goto('https://unrelated.example/');
   await assert.rejects(() => browser.snapshot(), /Only the/);

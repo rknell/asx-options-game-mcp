@@ -48,6 +48,11 @@ export class GameBrowser {
   async snapshot() {
     await this.start();
     await this.waitForLogin();
+    if (new URL(this.page.url()).hash.startsWith('#!/portfolio/')) {
+      await this.page.locator('tr').filter({ hasText: /Account Cash/ }).first()
+        .locator('td').nth(2).filter({ hasText: /\$\s*[\d,]/ })
+        .waitFor({ state: 'visible', timeout: 30000 });
+    }
     const id = snapshotId();
     const data = await this.page.evaluate(({ id }) => {
       const visible = el => {

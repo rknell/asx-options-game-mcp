@@ -2,7 +2,7 @@
 
 A local MCP server that lets an LLM inspect and operate the **[ASX / TradeFloor virtual Options Trading Game](https://optionsgame.com.au/)** through its browser interface. Each person signs in with their own account. No shared credentials, API keys, hosted backend, or model subscription is bundled.
 
-**Status: experimental browser adapter (v0.1).** Portfolio and strategy screens were inspected on the actual game. The adapter and MCP protocol are tested against isolated browser fixtures. Live order submission and cancellation have **not** been verified. This is a foundation for strategy experiments, not a promise of unattended execution. It is not affiliated with ASX, TradeFloor or Openmarkets.
+**Status: experimental browser adapter (v0.1).** Credential-backed unattended login was verified against the actual game. Portfolio, strategy and order screens were inspected. The adapter and MCP protocol are also tested against isolated browser fixtures. Live order submission and cancellation have **not** been verified. This is a foundation for strategy experiments, not yet a validated unattended trading system. It is not affiliated with ASX, TradeFloor or Openmarkets.
 
 ## Install
 
