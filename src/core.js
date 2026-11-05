@@ -6,7 +6,7 @@ export const GAME = 'https://optionsgame.com.au/tradefloor/#!/';
 export function assertGame(url) {
   const u = new URL(url);
   if (u.origin !== 'https://optionsgame.com.au' || !u.pathname.startsWith('/tradefloor/') || u.username || u.password)
-    throw new Error('Only the optionsgame.com.au/tradefloor game is supported. Complete login manually.');
+    throw new Error('Only the optionsgame.com.au/tradefloor game is supported. Take a fresh snapshot to authenticate.');
 }
 export function fingerprint(value) {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');

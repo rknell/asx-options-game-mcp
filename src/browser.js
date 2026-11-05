@@ -2,15 +2,20 @@ import { chromium } from 'playwright';
 import { mkdir, chmod } from 'node:fs/promises';
 import path from 'node:path';
 import { GAME, assertGame, fingerprint, snapshotId } from './core.js';
+import { CredentialStore } from './credentials.js';
+import { signIn } from './auth.js';
 
 export class GameBrowser {
-  constructor(directory, { headless = false } = {}) {
+  constructor(directory, { headless = false, credentials = new CredentialStore(directory) } = {}) {
     this.directory = directory;
     this.headless = headless;
     this.latest = null;
+    this.credentials = credentials;
+    this.authFailed = false;
   }
   async start() {
     if (this.context) return;
+    await this.credentials.load(); // Required setup; fail before launching when unavailable.
     const profile = path.join(this.directory, 'browser');
     await mkdir(profile, { recursive: true, mode: 0o700 });
     await chmod(this.directory, 0o700);
@@ -24,14 +29,25 @@ export class GameBrowser {
     await this.page.goto(GAME, { waitUntil: 'domcontentloaded' });
   }
   async close() { await this.context?.close(); this.context = null; }
+  async waitForLogin(timeout = 30000) {
+    await this.start();
+    if (this.authFailed) throw new Error('Previous login failed. Update credentials or resolve the account challenge, then restart the MCP.');
+    await this.page.locator('a[href^="#!/portfolio/"], form#login input#password').first().waitFor({ state: 'attached', timeout });
+    if (!(await this.page.locator('a[href^="#!/portfolio/"]').count())) {
+      this.latest = null;
+      try { await signIn(this.page, await this.credentials.load(), timeout); }
+      catch (e) { this.authFailed = true; throw e; }
+    }
+    assertGame(this.page.url());
+  }
   async screenshot() {
     await this.start();
-    assertGame(this.page.url());
+    await this.waitForLogin();
     return this.page.screenshot({ type: 'png' });
   }
   async snapshot() {
     await this.start();
-    assertGame(this.page.url());
+    await this.waitForLogin();
     const id = snapshotId();
     const data = await this.page.evaluate(({ id }) => {
       const visible = el => {
@@ -65,7 +81,7 @@ export class GameBrowser {
   }
   async navigate(view) {
     await this.start();
-    assertGame(this.page.url());
+    await this.waitForLogin();
     const known = { home: '#!/', strategy: '#!/strategy', orders: '#!/orders' };
     let hash = known[view];
     if (!hash) {
@@ -76,13 +92,15 @@ export class GameBrowser {
     }
     this.latest = null;
     await this.page.goto(`https://optionsgame.com.au/tradefloor/${hash}`, { waitUntil: 'domcontentloaded' });
+    const title = { portfolio: 'Portfolio', strategy: 'Strategy Builder', orders: 'Orders' }[view];
+    if (title) await this.page.waitForFunction(prefix => document.title.startsWith(prefix), title, { timeout: 30000 });
     return this.snapshot();
   }
   async act({ snapshotId: id, actions }) {
     await this.start();
     assertGame(this.page.url());
     if (!(await this.page.locator('a[href^="#!/portfolio/"]').count()))
-      throw new Error('Authenticated game navigation unavailable. Complete login manually.');
+      throw new Error('Authenticated game navigation unavailable. Take a fresh snapshot to reauthenticate; this action was not retried.');
     if (actions.some((a, i) => a.kind === 'click' && i !== actions.length - 1))
       throw new Error('A click must be the final action in a batch. Inspect the resulting state before another click.');
     const previous = this.latest;

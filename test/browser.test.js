@@ -13,6 +13,7 @@ test('browser adapter edits, snapshots, rejects stale forms and reads orders', a
   const context = await chromium.launchPersistentContext(dir, { headless: true });
   t.after(async () => { await context.close(); await rm(dir, { recursive: true, force: true }); });
   await context.route('**/*', route => route.fulfill({ contentType: 'text/html', body: `
+    <script>function title(){document.title=location.hash.includes('portfolio')?'Portfolio':location.hash.includes('orders')?'Orders':'Fixture';} title();addEventListener('hashchange',title);</script>
     <h1>Fixture game</h1><a href="#!/portfolio/123">Portfolio</a><a href="#!/orders">Orders</a>
     <input type="password" value="secret"><input type="hidden" value="hidden">
     <label>Code<input placeholder="Code" value="TEST"></label>

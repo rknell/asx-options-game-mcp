@@ -9,3 +9,5 @@ test-results/
 playwright-report/
 *storage-state*
 *cookies*.json
+session.json
+session.json.tmp

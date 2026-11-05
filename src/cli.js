@@ -3,9 +3,9 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { createInterface } from 'node:readline/promises';
 import { GameBrowser } from './browser.js';
 import { serve } from './server.js';
+import { configureCredentials } from './credentials.js';
 
 const args = process.argv.slice(2);
 const command = args[0] || 'serve';
@@ -16,14 +16,15 @@ if (command === 'setup') {
   const cli = fileURLToPath(new URL('../node_modules/playwright/cli.js', import.meta.url));
   const result = spawnSync(process.execPath, [cli, 'install', 'chromium'], { stdio: 'inherit' });
   process.exitCode = result.status ?? 1;
+  if (process.exitCode === 0) await configureCredentials(directory);
+} else if (command === 'credentials') {
+  await configureCredentials(directory);
 } else if (command === 'login') {
   const browser = new GameBrowser(directory);
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
   try {
-    await browser.start();
-    console.log(`Log into your own game account in the browser. Session data stays in ${directory}.`);
-    await rl.question('Once you can see your portfolio, press Enter here to save and close: ');
-  } finally { rl.close(); await browser.close(); }
+    await browser.waitForLogin();
+    console.log('Automatic login verified. The MCP can authenticate using your OS credential store.');
+  } finally { await browser.close(); }
 } else if (command === 'config') {
   console.log(JSON.stringify({ mcpServers: { 'asx-options-game': {
     command: process.execPath, args: [fileURLToPath(import.meta.url), 'serve', '--data-dir', directory],
@@ -31,6 +32,6 @@ if (command === 'setup') {
 } else if (command === 'serve') {
   await serve(directory);
 } else {
-  console.log('asx-options-game-mcp <setup|login|config|serve> [--data-dir PATH]');
+  console.log('asx-options-game-mcp <setup|credentials|login|config|serve> [--data-dir PATH]');
   if (!['help', '--help', '-h'].includes(command)) process.exitCode = 1;
 }
