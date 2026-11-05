@@ -1,0 +1,33 @@
+{
+  "name": "asx-options-game-mcp",
+  "version": "0.1.0",
+  "description": "Local MCP browser adapter for the ASX virtual Options Trading Game",
+  "scripts": {
+    "setup": "node src/cli.js setup",
+    "login": "node src/cli.js login",
+    "config": "node src/cli.js config",
+    "start": "node src/cli.js serve",
+    "test": "node --test",
+    "check": "node --check src/browser.js && node --check src/server.js && node --check src/cli.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "playwright": "1.64.1",
+    "zod": "4.6.7"
+  },
+  "bin": {
+    "asx-options-game-mcp": "src/cli.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+.local/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+test-results/
+playwright-report/
+*storage-state*
+*cookies*.json
