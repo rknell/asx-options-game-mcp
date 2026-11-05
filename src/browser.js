@@ -20,6 +20,7 @@ export class GameBrowser {
     });
     this.page = this.context.pages()[0] || await this.context.newPage();
     this.page.setDefaultTimeout(8000);
+    this.page.setDefaultNavigationTimeout(45000);
     await this.page.goto(GAME, { waitUntil: 'domcontentloaded' });
   }
   async close() { await this.context?.close(); this.context = null; }
