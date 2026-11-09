@@ -22,6 +22,10 @@ Use day limit orders and whole units. Refresh the quote after changing the symbo
 
 At 20% drawdown from the sleeve's high-water mark, cancel outstanding strategy entry orders, close only this strategy's remaining position when possible, then stop opening new positions pending the user's review. This is a once-daily check, not a guaranteed intraday stop. Continue research/reconciliation, without repeating unchanged alerts.
 
+## Additional research watchlist
+
+At the user's request on 9 November 2026, also read `docs/research-watchlist.md` each run and record its six candidates in a separate watchlist section of the daily research log. This expands research coverage only; the frozen GEAR/BBOZ/CASH execution rules and portfolio limits remain unchanged.
+
 ## Accounting and audit
 
 Keep all personal state under `.local/news-index-v1/` (gitignored). Before the first trade capture current cash, net liquidation, existing positions and orders; assign only new, verified strategy orders to this sleeve. Do not publish account data or credentials. Use one date-keyed JSON record per session, with state transitions written before submission and after reconciliation. Retain stable MCP request IDs for each intended operation. If an action is uncertain, reconcile before retrying; never invent a new request ID just to bypass the journal.
