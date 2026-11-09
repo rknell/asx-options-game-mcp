@@ -1,7 +1,7 @@
 export function assertSignIn(url) {
   const u = new URL(url);
   if (u.origin !== 'https://optionsgame.com.au' || u.pathname !== '/' || u.hash !== '#/signin' || u.username || u.password)
-    throw new Error('Refusing to enter credentials outside the exact game sign-in page.');
+    throw Object.assign(new Error('Refusing to enter credentials outside the exact game sign-in page.'), { code: 'LOGIN_ROUTE_NOT_READY' });
 }
 
 // Password values and Playwright fill errors must never escape this function.

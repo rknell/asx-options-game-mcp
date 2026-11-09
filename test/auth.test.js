@@ -41,7 +41,12 @@ test('saved credentials sign in unattended; expired sessions sign in again; fail
     loads++; return { email:'test@example.invalid', password:'synthetic-only' };
   } } });
   browser.context = context; browser.page = page;
-  await page.goto('https://optionsgame.com.au/#/signin');
+  await page.goto('https://optionsgame.com.au/#/loading');
+  await assert.rejects(() => browser.waitForLogin(100));
+  assert.equal(browser.authFailed, false);
+  assert.equal(loads, 0);
+  assert.equal(submits, 0);
+  await page.evaluate(() => setTimeout(() => { location.hash = '/signin'; }, 50));
   await browser.waitForLogin();
   assert.equal(submits, 1); assert.equal(loads, 1);
   assert.match((await browser.snapshot()).text, /Fixture authenticated/);
@@ -52,5 +57,10 @@ test('saved credentials sign in unattended; expired sessions sign in again; fail
   await page.goto('https://optionsgame.com.au/#/signin');
   await assert.rejects(() => browser.waitForLogin(200), /Automatic login did not/);
   await assert.rejects(() => browser.waitForLogin(200), /Previous login failed/);
+  assert.equal(submits, 3);
+  // Manual/session restoration must recover without another password submission.
+  await page.goto('https://optionsgame.com.au/tradefloor/#!/');
+  await browser.waitForLogin();
+  assert.equal(browser.authFailed, false);
   assert.equal(submits, 3);
 });

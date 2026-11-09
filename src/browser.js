@@ -31,14 +31,21 @@ export class GameBrowser {
   async close() { await this.context?.close(); this.context = null; }
   async waitForLogin(timeout = 30000) {
     await this.start();
-    if (this.authFailed) throw new Error('Previous login failed. Update credentials or resolve the account challenge, then restart the MCP.');
-    await this.page.locator('a[href^="#!/portfolio/"], form#login input#password').first().waitFor({ state: 'attached', timeout });
-    if (!(await this.page.locator('a[href^="#!/portfolio/"]').count())) {
+    await this.page.locator('a[href^="#!/portfolio/"], form#login input#password').first().waitFor({ state: 'visible', timeout });
+    if (!(await this.page.locator('a[href^="#!/portfolio/"]').first().isVisible())) {
+      if (this.authFailed) throw new Error('Previous login failed. Update credentials or resolve the account challenge, then restart the MCP.');
+      // The form can appear before the SPA finishes changing its route.
+      // Wait without loading/filling credentials; timeout is not a rejected login.
+      await this.page.waitForURL('https://optionsgame.com.au/#/signin', { timeout });
       this.latest = null;
       try { await signIn(this.page, await this.credentials.load(), timeout); }
-      catch (e) { this.authFailed = true; throw e; }
+      catch (e) {
+        if (e.code !== 'LOGIN_ROUTE_NOT_READY') this.authFailed = true;
+        throw e;
+      }
     }
     assertGame(this.page.url());
+    this.authFailed = false; // A verified restored session can clear an old failure.
   }
   async screenshot() {
     await this.start();
